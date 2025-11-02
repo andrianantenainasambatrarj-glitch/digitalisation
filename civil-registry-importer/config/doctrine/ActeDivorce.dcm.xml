@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="ActeDivorce" table="acte_divorce">
+    <indexes>
+      <index name="id_demande" columns="id_demande"/>
+      <index name="id_mariage" columns="id_mariage"/>
+      <index name="id_officier" columns="id_officier"/>
+    </indexes>
+    <unique-constraints>
+      <unique-constraint name="num_acte" columns="num_acte"/>
+    </unique-constraints>
+    <id name="idDivorce" type="integer" column="id_divorce">
+      <generator strategy="IDENTITY"/>
+    </id>
+    <field name="numActe" type="string" column="num_acte" length="50" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="idDemande" type="integer" column="id_demande" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="idMariage" type="integer" column="id_mariage" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="dateDivorce" type="date" column="date_divorce" nullable="false"/>
+    <field name="idJugement" type="string" column="id_jugement" length="100" nullable="true">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="idOfficier" type="integer" column="id_officier" nullable="true">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="commentaire" type="string" column="commentaire" length="150" nullable="true">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+  </entity>
+</doctrine-mapping>

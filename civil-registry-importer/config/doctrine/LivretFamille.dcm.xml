@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="LivretFamille" table="livret_famille">
+    <indexes>
+      <index name="id_mariage" columns="id_mariage"/>
+    </indexes>
+    <unique-constraints>
+      <unique-constraint name="num_livret" columns="num_livret"/>
+    </unique-constraints>
+    <id name="idLivret" type="integer" column="id_livret">
+      <generator strategy="IDENTITY"/>
+    </id>
+    <field name="numLivret" type="string" column="num_livret" length="50" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="idMariage" type="integer" column="id_mariage" nullable="true">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="dateCreation" type="date" column="date_creation" nullable="false"/>
+    <field name="commentaire" type="string" column="commentaire" length="150" nullable="true">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+  </entity>
+</doctrine-mapping>

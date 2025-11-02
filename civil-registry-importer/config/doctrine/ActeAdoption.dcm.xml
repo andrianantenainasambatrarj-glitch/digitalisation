@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="ActeAdoption" table="acte_adoption">
+    <indexes>
+      <index name="id_adoptant1" columns="id_adoptant1"/>
+      <index name="id_adoptant2" columns="id_adoptant2"/>
+      <index name="id_adopte" columns="id_adopte"/>
+      <index name="id_demande" columns="id_demande"/>
+      <index name="id_officier" columns="id_officier"/>
+    </indexes>
+    <unique-constraints>
+      <unique-constraint name="num_acte" columns="num_acte"/>
+    </unique-constraints>
+    <id name="idAdoption" type="integer" column="id_adoption">
+      <generator strategy="IDENTITY"/>
+    </id>
+    <field name="numActe" type="string" column="num_acte" length="50" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="idDemande" type="integer" column="id_demande" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="typeAdoption" type="string" column="type_adoption" length="0" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="idAdoptant1" type="integer" column="id_adoptant1" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="idAdoptant2" type="integer" column="id_adoptant2" nullable="true">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="idAdopte" type="integer" column="id_adopte" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="dateAdoption" type="date" column="date_adoption" nullable="false"/>
+    <field name="refJugement" type="string" column="ref_jugement" length="150" nullable="true">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="idOfficier" type="integer" column="id_officier" nullable="true">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="commentaire" type="string" column="commentaire" length="200" nullable="true">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+  </entity>
+</doctrine-mapping>

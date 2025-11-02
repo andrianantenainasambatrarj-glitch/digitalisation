@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="ActeMariage" table="acte_mariage">
+    <indexes>
+      <index name="id_demande" columns="id_demande"/>
+      <index name="id_epoux1" columns="id_epoux1"/>
+      <index name="id_epoux2" columns="id_epoux2"/>
+      <index name="id_officier" columns="id_officier"/>
+      <index name="id_temoin1" columns="id_temoin1"/>
+      <index name="id_temoin2" columns="id_temoin2"/>
+    </indexes>
+    <unique-constraints>
+      <unique-constraint name="num_acte" columns="num_acte"/>
+    </unique-constraints>
+    <id name="idMariage" type="integer" column="id_mariage">
+      <generator strategy="IDENTITY"/>
+    </id>
+    <field name="numActe" type="string" column="num_acte" length="50" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="idDemande" type="integer" column="id_demande" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="idEpoux1" type="integer" column="id_epoux1" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="idEpoux2" type="integer" column="id_epoux2" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="dateMariage" type="date" column="date_mariage" nullable="false"/>
+    <field name="lieuMariage" type="string" column="lieu_mariage" length="150" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="regimeMatrimonial" type="string" column="regime_matrimonial" length="50" nullable="true">
+      <options>
+        <option name="fixed"/>
+        <option name="default">communauté de biens</option>
+      </options>
+    </field>
+    <field name="referenceOrdonnance" type="string" column="reference_ordonnance" length="100" nullable="true">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="nationaliteEpoux1" type="string" column="nationalite_epoux1" length="50" nullable="true">
+      <options>
+        <option name="fixed"/>
+        <option name="default">Malgache</option>
+      </options>
+    </field>
+    <field name="nationaliteEpoux2" type="string" column="nationalite_epoux2" length="50" nullable="true">
+      <options>
+        <option name="fixed"/>
+        <option name="default">Malgache</option>
+      </options>
+    </field>
+    <field name="idTemoin1" type="integer" column="id_temoin1" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="idTemoin2" type="integer" column="id_temoin2" nullable="false">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="idOfficier" type="integer" column="id_officier" nullable="true">
+      <options>
+        <option name="unsigned"/>
+      </options>
+    </field>
+    <field name="dateActe" type="date" column="date_acte" nullable="false"/>
+    <field name="commentaire" type="string" column="commentaire" length="255" nullable="true">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+  </entity>
+</doctrine-mapping>
