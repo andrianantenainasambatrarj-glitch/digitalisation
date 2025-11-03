@@ -1,22 +1,39 @@
-import React from "react";
+import React, { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import PageHeader from "../components/PageHeader";
 import Hero from "../components/Hero";
+import { apiService } from "../services/api";
 
 const schema = Yup.object({
-  nomEpoux: Yup.string().required("Requis"),
-  prenomEpoux: Yup.string().optional(),
-  nomEpouse: Yup.string().required("Requis"),
-  prenomEpouse: Yup.string().optional(),
-  dateMariage: Yup.date().required("Requis"),
-  lieuMariage: Yup.string().required("Requis"),
-  regime: Yup.string().optional(),
-  commune: Yup.string().optional(),
-  contact: Yup.string().optional(),
+  // Informations époux
+  nomEpoux: Yup.string().required("Le nom de l'époux est obligatoire"),
+  prenomEpoux: Yup.string().required("Le prénom de l'époux est obligatoire"),
+  dateNaissanceEpoux: Yup.date().required("La date de naissance de l'époux est obligatoire"),
+  
+  // Informations épouse
+  nomEpouse: Yup.string().required("Le nom de l'épouse est obligatoire"),
+  prenomEpouse: Yup.string().required("Le prénom de l'épouse est obligatoire"),
+  dateNaissanceEpouse: Yup.date().required("La date de naissance de l'épouse est obligatoire"),
+  
+  // Informations mariage
+  dateMariage: Yup.date().required("La date du mariage est obligatoire"),
+  lieuMariage: Yup.string().required("Le lieu du mariage est obligatoire"),
+  regimeMatrimonial: Yup.string().optional(),
+  
+  // Informations demande
+  motif: Yup.string().required("Le motif de la demande est obligatoire"),
+  emailDemandeur: Yup.string().email("Email invalide").required("L'email est obligatoire"),
+  telephoneDemandeur: Yup.string().required("Le téléphone est obligatoire"),
+  
+  // Optionnel
+  citoyenId: Yup.number().integer().optional(),
 });
 
 export default function MariageFormPage() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState("");
+
   return (
     <div>
       <Hero
@@ -26,74 +43,129 @@ export default function MariageFormPage() {
       />
       <PageHeader title="Demande d'acte de mariage" subtitle="Renseignez les informations du couple et de la célébration" />
 
-      <div className="card border border-base-300 bg-base-100">
+      {submitMessage && (
+        <div className={`alert ${submitMessage.includes('succès') ? 'alert-success' : 'alert-error'} mx-4 md:mx-8 mb-4`}>
+          {submitMessage}
+        </div>
+      )}
+
+      <div className="card border border-base-300 bg-base-100 mx-4 md:mx-8 mb-12">
         <div className="card-body p-6">
           <Formik
             initialValues={{
               nomEpoux: "",
               prenomEpoux: "",
+              dateNaissanceEpoux: "",
               nomEpouse: "",
               prenomEpouse: "",
+              dateNaissanceEpouse: "",
               dateMariage: "",
               lieuMariage: "",
-              regime: "",
-              commune: "",
-              contact: "",
+              regimeMatrimonial: "",
+              motif: "",
+              emailDemandeur: "",
+              telephoneDemandeur: "",
+              citoyenId: "",
             }}
             validationSchema={schema}
-            onSubmit={(values, { setSubmitting, resetForm }) => {
-              console.log("Mariage:", values);
-              setSubmitting(false);
-              resetForm();
-              alert("Demande envoyée.");
+            onSubmit={async (values, { setSubmitting, resetForm }) => {
+              setIsSubmitting(true);
+              setSubmitMessage("");
+              
+              try {
+                const demandeData = {
+                  typeActe: "mariage",
+                  citoyenId: values.citoyenId || null,
+                  motif: values.motif,
+                  emailDemandeur: values.emailDemandeur,
+                  telephoneDemandeur: values.telephoneDemandeur,
+                  statut: "en_cours",
+                  donneesSupplementaires: {
+                    // Informations époux
+                    nomEpoux: values.nomEpoux,
+                    prenomEpoux: values.prenomEpoux,
+                    dateNaissanceEpoux: values.dateNaissanceEpoux,
+                    // Informations épouse
+                    nomEpouse: values.nomEpouse,
+                    prenomEpouse: values.prenomEpouse,
+                    dateNaissanceEpouse: values.dateNaissanceEpouse,
+                    // Informations mariage
+                    dateMariage: values.dateMariage,
+                    lieuMariage: values.lieuMariage,
+                    regimeMatrimonial: values.regimeMatrimonial,
+                  }
+                };
+
+                const result = await apiService.createDemande(demandeData);
+                setSubmitMessage("Votre demande d'acte de mariage a été soumise avec succès !");
+                resetForm();
+              } catch (error) {
+                setSubmitMessage("Erreur lors de l'envoi de la demande. Veuillez réessayer.");
+                console.error("Erreur:", error);
+              } finally {
+                setIsSubmitting(false);
+                setSubmitting(false);
+              }
             }}
           >
-            {({ isSubmitting }) => (
+            {({ isSubmitting: formikSubmitting }) => (
               <Form className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="label font-semibold">Nom époux</label>
-                    <Field name="nomEpoux" className="input input-bordered w-full" />
-                    <ErrorMessage name="nomEpoux" component="div" className="text-error text-sm mt-1" />
+                {/* Section époux */}
+                <section>
+                  <h3 className="text-lg font-bold mb-4 text-primary">Informations de l'époux</h3>
+                  <div className="grid md:grid-cols-3 gap-6">
+                    <FormInput name="nomEpoux" label="Nom" />
+                    <FormInput name="prenomEpoux" label="Prénom" />
+                    <FormInput name="dateNaissanceEpoux" type="date" label="Date de naissance" />
                   </div>
-                  <div>
-                    <label className="label font-semibold">Prénom époux</label>
-                    <Field name="prenomEpoux" className="input input-bordered w-full" />
-                  </div>
+                </section>
 
-                  <div>
-                    <label className="label font-semibold">Nom épouse</label>
-                    <Field name="nomEpouse" className="input input-bordered w-full" />
-                    <ErrorMessage name="nomEpouse" component="div" className="text-error text-sm mt-1" />
+                {/* Section épouse */}
+                <section>
+                  <h3 className="text-lg font-bold mb-4 text-secondary">Informations de l'épouse</h3>
+                  <div className="grid md:grid-cols-3 gap-6">
+                    <FormInput name="nomEpouse" label="Nom" />
+                    <FormInput name="prenomEpouse" label="Prénom" />
+                    <FormInput name="dateNaissanceEpouse" type="date" label="Date de naissance" />
                   </div>
-                  <div>
-                    <label className="label font-semibold">Prénom épouse</label>
-                    <Field name="prenomEpouse" className="input input-bordered w-full" />
-                  </div>
-                </div>
+                </section>
 
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="label font-semibold">Date du mariage</label>
-                    <Field type="date" name="dateMariage" className="input input-bordered w-full" />
-                    <ErrorMessage name="dateMariage" component="div" className="text-error text-sm mt-1" />
+                {/* Section mariage */}
+                <section>
+                  <h3 className="text-lg font-bold mb-4 text-accent">Informations du mariage</h3>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <FormInput name="dateMariage" type="date" label="Date du mariage" />
+                    <FormInput name="lieuMariage" label="Lieu du mariage" />
                   </div>
-                  <div>
-                    <label className="label font-semibold">Lieu du mariage</label>
-                    <Field name="lieuMariage" className="input input-bordered w-full" />
-                    <ErrorMessage name="lieuMariage" component="div" className="text-error text-sm mt-1" />
+                  <div className="mt-4">
+                    <FormInput name="regimeMatrimonial" label="Régime matrimonial (optionnel)" />
                   </div>
-                </div>
+                </section>
 
-                <Field name="regime" className="input input-bordered w-full" placeholder="Régime matrimonial (optionnel)" />
-
-                <div className="grid md:grid-cols-2 gap-6">
-                  <Field name="commune" className="input input-bordered w-full" placeholder="Commune" />
-                  <Field name="contact" className="input input-bordered w-full" placeholder="Contact" />
-                </div>
+                {/* Section demande */}
+                <section>
+                  <h3 className="text-lg font-bold mb-4 text-info">Informations de la demande</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="label font-semibold">Motif de la demande</label>
+                      <Field as="textarea" name="motif" className="textarea textarea-bordered w-full" 
+                             placeholder="Expliquez pourquoi vous demandez cet acte de mariage" />
+                      <ErrorMessage name="motif" component="div" className="text-error text-sm mt-1" />
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <FormInput name="telephoneDemandeur" label="Téléphone" />
+                      <FormInput name="emailDemandeur" label="Email" type="email" />
+                    </div>
+                    <FormInput name="citoyenId" type="number" label="ID Citoyen (si connu)" />
+                  </div>
+                </section>
 
                 <div className="text-center pt-2">
-                  <button type="submit" disabled={isSubmitting} className="btn btn-primary rounded-full w-full md:w-auto px-10">
+                  <button 
+                    type="submit" 
+                    disabled={isSubmitting || formikSubmitting} 
+                    className="btn btn-primary rounded-full w-full md:w-auto px-10"
+                  >
                     {isSubmitting ? "Envoi..." : "Soumettre la demande"}
                   </button>
                 </div>
@@ -105,3 +177,12 @@ export default function MariageFormPage() {
     </div>
   );
 }
+
+// Composant réutilisable pour les champs
+const FormInput = ({ name, label, type = "text" }) => (
+  <div>
+    <label className="label font-semibold">{label}</label>
+    <Field name={name} type={type} className="input input-bordered w-full" />
+    <ErrorMessage name={name} component="div" className="text-error text-sm mt-1" />
+  </div>
+);

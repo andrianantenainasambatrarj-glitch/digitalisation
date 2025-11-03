@@ -11,6 +11,10 @@ import AdoptionFormPage from "./pages/AdoptionFormPage";
 import DecesFormPage from "./pages/DecesFormPage";
 import DivorceFormPage from "./pages/DivorceFormPage";
 import CertificatCelibatPage from "./pages/CertificatCelibatPage";
+import AgentLoginPage from './pages/AgentLoginPage';
+import AgentDashboardPage from './pages/AgentDashboardPage';
+import AgentDemandeDetailPage from './pages/AgentDemandeDetailPage';
+
 
 function App() {
   return (
@@ -31,6 +35,9 @@ function App() {
         <Route path="/demande/deces" element={<DecesFormPage />} />
         <Route path="/demande/divorce" element={<DivorceFormPage />} />
         <Route path="/demande/celibat" element={<CertificatCelibatPage />} />
+        <Route path="/agent/login" element={<AgentLoginPage />} />
+        <Route path="/agent/dashboard" element={<AgentDashboardPage />} />
+        <Route path="/agent/demandes/:id" element={<AgentDemandeDetailPage />} />
       </Routes>
     </Router>
   );

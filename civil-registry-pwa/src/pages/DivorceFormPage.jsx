@@ -1,80 +1,138 @@
-import React from "react";
+import React, { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import PageHeader from "../components/PageHeader";
 import Hero from "../components/Hero";
+import { apiService } from "../services/api";
 
 const schema = Yup.object({
-  nomReq: Yup.string().required("Requis"),
-  prenomReq: Yup.string().optional(),
-  nomPart: Yup.string().required("Requis"),
-  prenomPart: Yup.string().optional(),
-  dateProc: Yup.date().required("Requis"),
-  motif: Yup.string().optional(),
-  contact: Yup.string().optional(),
+  // Informations du mariage
+  dateMariage: Yup.date().required("La date du mariage est obligatoire"),
+  lieuMariage: Yup.string().required("Le lieu du mariage est obligatoire"),
+  
+  // Informations du divorce
+  dateDivorce: Yup.date().required("La date du divorce est obligatoire"),
+  lieuDivorce: Yup.string().required("Le lieu du divorce est obligatoire"),
+  motif: Yup.string().required("Le motif du divorce est obligatoire"),
+  
+  // Informations du demandeur
+  emailDemandeur: Yup.string().email("Email invalide").required("L'email est obligatoire"),
+  telephoneDemandeur: Yup.string().required("Le téléphone est obligatoire"),
+  
+  // Optionnel
+  citoyenId: Yup.number().integer().optional(),
 });
 
 export default function DivorceFormPage() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState("");
+
   return (
     <div>
       <Hero
         title="Acte de divorce"
         subtitle="Demande officielle en ligne"
-        image="https://images.unsplash.com/photo-1488998527040-85054a85150e?q=80&w=1600&auto=format&fit=crop"
+        image="https://images.unsplash.com/photo-1589994965851-a8f479c573a9?q=80&w=1600&auto=format&fit=crop"
       />
-      <PageHeader title="Demande d'acte de divorce" subtitle="Renseignez les informations des parties et de la procédure" />
+      <PageHeader title="Demande d'acte de divorce" subtitle="Renseignez les informations du mariage et du divorce" />
 
-      <div className="card border border-base-300 bg-base-100">
+      {submitMessage && (
+        <div className={`alert ${submitMessage.includes('succès') ? 'alert-success' : 'alert-error'} mx-4 md:mx-8 mb-4`}>
+          {submitMessage}
+        </div>
+      )}
+
+      <div className="card border border-base-300 bg-base-100 mx-4 md:mx-8 mb-12">
         <div className="card-body p-6">
           <Formik
-            initialValues={{ nomReq: "", prenomReq: "", nomPart: "", prenomPart: "", dateProc: "", motif: "", contact: "" }}
+            initialValues={{
+              dateMariage: "",
+              lieuMariage: "",
+              dateDivorce: "",
+              lieuDivorce: "",
+              motif: "",
+              emailDemandeur: "",
+              telephoneDemandeur: "",
+              citoyenId: "",
+            }}
             validationSchema={schema}
-            onSubmit={(values, { setSubmitting, resetForm }) => {
-              console.log("Divorce:", values);
-              setSubmitting(false);
-              resetForm();
-              alert("Demande envoyée.");
+            onSubmit={async (values, { setSubmitting, resetForm }) => {
+              setIsSubmitting(true);
+              setSubmitMessage("");
+              
+              try {
+                const demandeData = {
+                  typeActe: "divorce",
+                  citoyenId: values.citoyenId || null,
+                  motif: `Demande d'acte de divorce - ${values.motif}`,
+                  emailDemandeur: values.emailDemandeur,
+                  telephoneDemandeur: values.telephoneDemandeur,
+                  statut: "en_cours",
+                  donneesSupplementaires: {
+                    // Informations du mariage
+                    dateMariage: values.dateMariage,
+                    lieuMariage: values.lieuMariage,
+                    // Informations du divorce
+                    dateDivorce: values.dateDivorce,
+                    lieuDivorce: values.lieuDivorce,
+                    motifDivorce: values.motif,
+                  }
+                };
+
+                const result = await apiService.createDemande(demandeData);
+                setSubmitMessage("Votre demande d'acte de divorce a été soumise avec succès !");
+                resetForm();
+              } catch (error) {
+                setSubmitMessage("Erreur lors de l'envoi de la demande. Veuillez réessayer.");
+                console.error("Erreur:", error);
+              } finally {
+                setIsSubmitting(false);
+                setSubmitting(false);
+              }
             }}
           >
-            {({ isSubmitting }) => (
+            {({ isSubmitting: formikSubmitting }) => (
               <Form className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="label font-semibold">Nom du requérant</label>
-                    <Field name="nomReq" className="input input-bordered w-full" />
-                    <ErrorMessage name="nomReq" component="div" className="text-error text-sm mt-1" />
+                {/* Section mariage */}
+                <section>
+                  <h3 className="text-lg font-bold mb-4 text-primary">Informations du mariage</h3>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <FormInput name="dateMariage" type="date" label="Date du mariage" />
+                    <FormInput name="lieuMariage" label="Lieu du mariage" />
                   </div>
-                  <div>
-                    <label className="label font-semibold">Prénom du requérant</label>
-                    <Field name="prenomReq" className="input input-bordered w-full" />
-                  </div>
-                </div>
+                </section>
 
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="label font-semibold">Nom de la partie</label>
-                    <Field name="nomPart" className="input input-bordered w-full" />
-                    <ErrorMessage name="nomPart" component="div" className="text-error text-sm mt-1" />
+                {/* Section divorce */}
+                <section>
+                  <h3 className="text-lg font-bold mb-4 text-secondary">Informations du divorce</h3>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <FormInput name="dateDivorce" type="date" label="Date du divorce" />
+                    <FormInput name="lieuDivorce" label="Lieu du divorce" />
                   </div>
-                  <div>
-                    <label className="label font-semibold">Prénom de la partie</label>
-                    <Field name="prenomPart" className="input input-bordered w-full" />
+                  <div className="mt-4">
+                    <label className="label font-semibold">Motif du divorce</label>
+                    <Field as="textarea" name="motif" className="textarea textarea-bordered w-full" 
+                           placeholder="Décrivez les motifs du divorce" />
+                    <ErrorMessage name="motif" component="div" className="text-error text-sm mt-1" />
                   </div>
-                </div>
+                </section>
 
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="label font-semibold">Date de la procédure</label>
-                    <Field type="date" name="dateProc" className="input input-bordered w-full" />
-                    <ErrorMessage name="dateProc" component="div" className="text-error text-sm mt-1" />
+                {/* Section demande */}
+                <section>
+                  <h3 className="text-lg font-bold mb-4 text-accent">Informations de la demande</h3>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <FormInput name="telephoneDemandeur" label="Téléphone" />
+                    <FormInput name="emailDemandeur" label="Email" type="email" />
                   </div>
-                  <Field name="contact" className="input input-bordered w-full" placeholder="Contact" />
-                </div>
-
-                <Field as="textarea" name="motif" className="textarea textarea-bordered w-full" placeholder="Remarques / motif" />
+                  <FormInput name="citoyenId" type="number" label="ID Citoyen (si connu)" />
+                </section>
 
                 <div className="text-center pt-2">
-                  <button type="submit" disabled={isSubmitting} className="btn btn-primary rounded-full w-full md:w-auto px-10">
+                  <button 
+                    type="submit" 
+                    disabled={isSubmitting || formikSubmitting} 
+                    className="btn btn-primary rounded-full w-full md:w-auto px-10"
+                  >
                     {isSubmitting ? "Envoi..." : "Soumettre la demande"}
                   </button>
                 </div>
@@ -86,3 +144,12 @@ export default function DivorceFormPage() {
     </div>
   );
 }
+
+// Composant réutilisable pour les champs
+const FormInput = ({ name, label, type = "text" }) => (
+  <div>
+    <label className="label font-semibold">{label}</label>
+    <Field name={name} type={type} className="input input-bordered w-full" />
+    <ErrorMessage name="name" component="div" className="text-error text-sm mt-1" />
+  </div>
+);
