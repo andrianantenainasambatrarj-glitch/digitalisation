@@ -3,25 +3,49 @@ const API_BASE_URL = 'http://localhost:8000/api'; // Adapter selon votre configu
 export const agentApi = {
   // Authentification agent
   async login(credentials) {
-    const response = await fetch(`${API_BASE_URL}/login_check`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(credentials),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/login_check`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+      });
 
-    if (!response.ok) {
-      throw new Error('Identifiants incorrects');
+      if (!response.ok) {
+        throw new Error('Identifiants incorrects');
+      }
+
+      const data = await response.json();
+      localStorage.setItem('agent_token', data.token);
+      return data;
+    } catch (error) {
+      console.error('Erreur de connexion:', error);
+      throw error;
     }
+  },
 
-    return await response.json();
+  // Vérifier si l'agent est connecté
+  isAuthenticated() {
+    return !!localStorage.getItem('agent_token');
+  },
+
+  // Déconnexion
+  logout() {
+    localStorage.removeItem('agent_token');
+  },
+
+  // Récupérer le token
+  getToken() {
+    return localStorage.getItem('agent_token');
   },
 
   // Récupérer toutes les demandes
   async getDemandes() {
-    const token = localStorage.getItem('agent_token');
-    const response = await fetch(`${API_BASE_URL}/demande_acte`, {
+    const token = this.getToken();
+    if (!token) throw new Error('Non authentifié');
+
+    const response = await fetch(`${API_BASE_URL}/demande`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
@@ -36,7 +60,9 @@ export const agentApi = {
 
   // Traiter une demande
   async traiterDemande(demandeId, statut, commentaire = '') {
-    const token = localStorage.getItem('agent_token');
+    const token = this.getToken();
+    if (!token) throw new Error('Non authentifié');
+
     const response = await fetch(`${API_BASE_URL}/demandes/${demandeId}/traiter`, {
       method: 'POST',
       headers: {
@@ -45,7 +71,7 @@ export const agentApi = {
       },
       body: JSON.stringify({
         statut: statut,
-        commentaire: commentaire,
+        commentaire: commentaire
       }),
     });
 
@@ -58,14 +84,16 @@ export const agentApi = {
 
   // Créer un acte officiel à partir d'une demande
   async creerActeDepuisDemande(demandeId, typeActe, donnees) {
-    const token = localStorage.getItem('agent_token');
+    const token = this.getToken();
+    if (!token) throw new Error('Non authentifié');
+
     const endpoints = {
       naissance: '/naissance',
       mariage: '/mariage',
       deces: '/deces',
       divorce: '/divorce',
       reconnaissance: '/reconnaissance',
-      adoption: '/acte_adoption'
+      adoption: '/adoption'
     };
 
     const response = await fetch(`${API_BASE_URL}${endpoints[typeActe]}`, {
